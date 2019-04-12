@@ -147,7 +147,7 @@ class TrainingAutoEncoders:
 
         return train_image,val_image
 
-    def train_autoencoders(self,validation_splits=3,model_train=None,epochs=15,model_save_name='',im_size=(88,88,3)):
+    def train_autoencoders(self,validation_splits=3,model_train=None,epochs=15,model_save_name='',im_size=(88,88,3),batch_size=1):
         csv_logger = CSVLogger(model_save_name+'.csv',
                                    append=True, separator=',')
         # tensorboard = TensorBoard(log_dir="logs/{}".format(time()), histogram_freq=1,
@@ -161,9 +161,9 @@ class TrainingAutoEncoders:
 
             for count in range(validation_splits-1):
                 train_images,val_images=self.get_split_images(k_split_no=count+1,total_splits=validation_splits,im_size=im_size)
-                model_train.fit(train_images, train_images, epochs=1, batch_size=1,
+                model_train.fit(train_images, train_images, epochs=1, batch_size=batch_size,
                                 validation_data=(val_images, val_images),callbacks=callbacks_list2)
-        model_train.save(model_save_name)
+            model_train.save(model_save_name)
 
 if __name__ == '__main__':
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--epochs", help="no of epochs for each autoencoder  ", type=int, required=True)
 
-    # parser.add_argument("--kfold", help="k for cross k validation ", type=int, required=True)
+    parser.add_argument("--batch_size", help="batch size for per epoch ", type=int, required=True)
 
     args = parser.parse_args()
 
@@ -199,7 +199,8 @@ if __name__ == '__main__':
                                              ,pkl_file_name="head_data.pkl")
     training_instance.load_dataset()
     training_instance.train_autoencoders(validation_splits=3,model_train=head_autoencoder
-                                         ,epochs=args.epochs,model_save_name='head_autoEncoder.h5',im_size=(88,88,3))
+                                         ,epochs=args.epochs,model_save_name='head_autoEncoder.h5',im_size=(88,88,3)
+                                         ,batch_size=args.batch_size)
 
     print("Train autoencoder for upper body \n")
     total_files = glob.glob(ubody_training_Path+"training/" + "*.jpg")
@@ -209,7 +210,8 @@ if __name__ == '__main__':
                                              ,pkl_file_name="ubody_data.pkl")
     training_instance.load_dataset()
     training_instance.train_autoencoders(validation_splits=4, model_train=ubody_autoencoder
-                                         , epochs=args.epochs, model_save_name='ubody_autoEncoder.h5',im_size=(128,128,3))
+                                         , epochs=args.epochs, model_save_name='ubody_autoEncoder.h5',im_size=(128,128,3)
+                                         ,batch_size=args.batch_size)
 
     print("Train autoencoder for lower body \n")
     total_files = glob.glob(lbody_training_Path + "training/" + "*.jpg")
@@ -220,7 +222,8 @@ if __name__ == '__main__':
                                              , pkl_file_name="lbody_data.pkl")
     training_instance.load_dataset()
     training_instance.train_autoencoders(validation_splits=3, model_train=ubody_autoencoder
-                                         , epochs=args.epochs, model_save_name='lbody_autoEncoder.h5',im_size=(128,128,3))
+                                         , epochs=args.epochs, model_save_name='lbody_autoEncoder.h5',im_size=(128,128,3)
+                                         ,batch_size=args.batch_size)
 
 
 
